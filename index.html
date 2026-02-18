@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>Run Tracker</title>
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <header class="top">
+    <div class="title">
+      <div class="appname">Run Tracker</div>
+      <div class="sub">GPS distance • time • pace</div>
+    </div>
+    <div class="status" id="status">Ready.</div>
+  </header>
+
+  <main class="wrap">
+    <section class="card grid">
+      <div class="metric">
+        <div class="label">Time</div>
+        <div class="value" id="time">00:00:00</div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Distance</div>
+        <div class="value" id="miles">0.000 mi</div>
+        <div class="small" id="feet">0 ft</div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Pace</div>
+        <div class="value" id="pace">--:-- /mi</div>
+        <div class="small" id="speed">0.0 mph</div>
+      </div>
+
+      <div class="metric">
+        <div class="label">Points</div>
+        <div class="value" id="points">0</div>
+        <div class="small" id="accuracy">-- m accuracy</div>
+      </div>
+    </section>
+
+    <section class="card controls">
+      <button class="btn primary" id="startBtn">Start</button>
+      <button class="btn" id="pauseBtn" disabled>Pause</button>
+      <button class="btn" id="resumeBtn" disabled>Resume</button>
+      <button class="btn danger" id="stopBtn" disabled>Stop</button>
+      <button class="btn" id="clearBtn">Clear</button>
+    </section>
+
+    <section class="card">
+      <div class="row">
+        <div class="rowTitle">Route (approx)</div>
+        <div class="rowHint">Keeps it simple—no external map APIs.</div>
+      </div>
+      <canvas id="trace" width="900" height="450" aria-label="Route trace"></canvas>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="exportGpxBtn" disabled>Export GPX</button>
+        <button class="btn" id="exportJsonBtn" disabled>Download JSON</button>
+        <button class="btn" id="copySummaryBtn" disabled>Copy Summary</button>
+      </div>
+    </section>
+
+    <section class="card smallprint">
+      <div><b>Important:</b> GPS works best outdoors with clear sky.</div>
+      <div>On iPhone/iPad: use <b>Safari</b> and allow Location. On ChromeOS/Android: allow Location.</div>
+      <div>If it won’t start, ensure the page is served via <b>HTTPS</b> (GitHub Pages is).</div>
+    </section>
+  </main>
+
+  <script>
+    // Register service worker (optional offline)
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+  <script src="./app.js"></script>
+</body>
+</html>
