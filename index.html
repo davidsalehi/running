@@ -7,6 +7,14 @@
   <title>Run Tracker</title>
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
+
+  <!-- Leaflet (map) -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
 </head>
 <body>
   <header class="top">
@@ -51,19 +59,21 @@
       <button class="btn" id="clearBtn">Clear</button>
     </section>
 
-    <section class="card">
-      <div class="row">
-        <div class="rowTitle">Route (approx)</div>
-        <div class="rowHint">Keeps it simple—no external map APIs.</div>
-      </div>
-      <canvas id="trace" width="900" height="450" aria-label="Route trace"></canvas>
-      <div class="row" style="margin-top:10px;">
-        <button class="btn" id="exportGpxBtn" disabled>Export GPX</button>
-        <button class="btn" id="exportJsonBtn" disabled>Download JSON</button>
-        <button class="btn" id="copySummaryBtn" disabled>Copy Summary</button>
-      </div>
-    </section>
+  <section class="card">
+  <div class="row">
+    <div class="rowTitle">Route (Aerial Map)</div>
+    <div class="rowHint">Blue line = your path. Green = start. Red = end.</div>
+  </div>
 
+  <div id="map" aria-label="Route map"></div>
+
+  <div class="row" style="margin-top:10px;">
+    <button class="btn" id="recenterBtn" disabled>Recenter</button>
+    <button class="btn" id="exportGpxBtn" disabled>Export GPX</button>
+    <button class="btn" id="exportJsonBtn" disabled>Download JSON</button>
+    <button class="btn" id="copySummaryBtn" disabled>Copy Summary</button>
+  </div>
+</section>
     <section class="card smallprint">
       <div><b>Important:</b> GPS works best outdoors with clear sky.</div>
       <div>On iPhone/iPad: use <b>Safari</b> and allow Location. On ChromeOS/Android: allow Location.</div>
@@ -76,7 +86,11 @@
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
     }
-  </script>
-  <script src="./app.js"></script>
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+<script src="./app.js"></script>
 </body>
 </html>
