@@ -4,13 +4,5 @@
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0b0b0d",
-  "theme_color": "#111111",
-  "icons": [
-    {
-      "src": "https://www.svgrepo.com/download/521654/run.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
-    }
-  ]
+  "theme_color": "#111111"
 }
