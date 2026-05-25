@@ -166,5 +166,5 @@ canvas{
 }
 /* Extra scroll room so controls can scroll off-screen */
 .wrap{
-  padding-bottom: 260px;
+  padding-bottom: 500px;
 }
