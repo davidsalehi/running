@@ -25,97 +25,67 @@
     <div class="status" id="status">Ready.</div>
   </header>
 
-  <main class="wrap">
-    <section class="card grid">
-      <div class="metric">
-        <div class="label">Time</div>
-        <div class="value" id="time">00:00:00</div>
-      </div>
+ <main class="wrap">
+  <section class="card grid">
+    <!-- metrics ... -->
+  </section>
 
-      <div class="metric">
-        <div class="label">Distance</div>
-        <div class="value" id="miles">0.000 mi</div>
-        <div class="small" id="feet">0 ft</div>
-      </div>
-
-      <div class="metric">
-        <div class="label">Pace</div>
-        <div class="value" id="pace">--:-- /mi</div>
-        <div class="small" id="speed">0.0 mph</div>
-      </div>
-
-      <div class="metric">
-        <div class="label">Points</div>
-        <div class="value" id="points">0</div>
-        <div class="small" id="accuracy">-- m accuracy</div>
-      </div>
-    </section>
-
-    <section class="card controls">
-      <button class="btn primary" id="startBtn">Start</button>
-      <button class="btn" id="pauseBtn" disabled>Pause</button>
-      <button class="btn" id="resumeBtn" disabled>Resume</button>
-      <button class="btn danger" id="stopBtn" disabled>Stop</button>
-      <button class="btn" id="clearBtn">Clear</button>
-    </section>
+  <section class="card controls">
+    <button class="btn primary" id="startBtn">Start</button>
+    <button class="btn" id="pauseBtn" disabled>Pause</button>
+    <button class="btn" id="resumeBtn" disabled>Resume</button>
+    <button class="btn danger" id="stopBtn" disabled>Stop</button>
+    <button class="btn" id="clearBtn">Clear</button>
+  </section>
 
   <section class="card">
-  <div class="row">
-    <div class="rowTitle">Route (Aerial Map)</div>
-    <div class="rowHint">Blue line = your path. Green = start. Red = end.</div>
-  </div>
-
-  <div id="map" aria-label="Route map"></div>
-
-  <div class="row" style="margin-top:10px;">
-    <button class="btn" id="recenterBtn" disabled>Recenter</button>
-    <button class="btn" id="exportGpxBtn" disabled>Export GPX</button>
-    <button class="btn" id="exportJsonBtn" disabled>Download JSON</button>
-    <button class="btn" id="copySummaryBtn" disabled>Copy Summary</button>
-  </div>
-    <section class="card">
-  <div class="row">
-    <div>
-      <div class="rowTitle">Run History</div>
-      <div class="rowHint">Saved locally in your browser (this device only).</div>
+    <div class="row">
+      <div class="rowTitle">Route (Aerial Map)</div>
+      <div class="rowHint">Blue line = your path. Green = start. Red = end.</div>
     </div>
-    <button class="btn" id="clearHistoryBtn">Clear History</button>
-  </div>
 
-  <div id="history" class="history"></div>
-</section>
-</section>
-    <section class="card smallprint">
-      <div><b>Important:</b> GPS works best outdoors with clear sky.</div>
-      <div>On iPhone/iPad: use <b>Safari</b> and allow Location. On ChromeOS/Android: allow Location.</div>
-      <div>If it won’t start, ensure the page is served via <b>HTTPS</b> (GitHub Pages is).</div>
-    </section>
-  </main>
+    <div id="map" aria-label="Route map"></div>
 
-  <script>
-    // Register service worker (optional offline)
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("./sw.js").catch(() => {});
-    }
-  </script>
-  
-<section class="card">
-  <div class="row">
-    <div>
-      <div class="rowTitle">Run History</div>
-      <div class="rowHint">Saved locally on this device.</div>
+    <div class="row" style="margin-top:10px;">
+      <button class="btn" id="recenterBtn" disabled>Recenter</button>
+      <button class="btn" id="exportGpxBtn" disabled>Export GPX</button>
+      <button class="btn" id="exportJsonBtn" disabled>Download JSON</button>
+      <button class="btn" id="copySummaryBtn" disabled>Copy Summary</button>
     </div>
-    <button class="btn" id="clearHistoryBtn">Clear History</button>
-  </div>
+  </section>
 
-  <div id="history" class="history"></div>
-</section>
-  <script
-    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
-    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
-    crossorigin=""
-  ></script>
+  <!-- ✅ Keep Run History ONCE, here -->
+  <section class="card">
+    <div class="row">
+      <div>
+        <div class="rowTitle">Run History</div>
+        <div class="rowHint">Saved locally in your browser (this device only).</div>
+      </div>
+      <button class="btn" id="clearHistoryBtn">Clear History</button>
+    </div>
 
-  <script src="./app.js"></script>
-</body>
-</html>
+    <div id="history" class="history"></div>
+  </section>
+
+  <section class="card smallprint">
+    <div><b>Important:</b> GPS works best outdoors with clear sky.</div>
+    <div>On iPhone/iPad: use <b>Safari</b> and allow Location. On ChromeOS/Android: allow Location.</div>
+    <div>If it won’t start, ensure the page is served via <b>HTTPS</b> (GitHub Pages is).</div>
+  </section>
+
+  <!-- Optional extra scroll space so Stop scrolls away faster -->
+  <div style="height: 180px;"></div>
+</main>
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  }
+</script>
+
+<script
+  src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""
+></script>
+
+<script src="./app.js"></script>
