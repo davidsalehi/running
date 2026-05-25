@@ -98,7 +98,18 @@
       navigator.serviceWorker.register("./sw.js").catch(() => {});
     }
   </script>
+  
+<section class="card">
+  <div class="row">
+    <div>
+      <div class="rowTitle">Run History</div>
+      <div class="rowHint">Saved locally on this device.</div>
+    </div>
+    <button class="btn" id="clearHistoryBtn">Clear History</button>
+  </div>
 
+  <div id="history" class="history"></div>
+</section>
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
