@@ -22,12 +22,220 @@ const UI = {
   exportGpxBtn: document.getElementById("exportGpxBtn"),
   exportJsonBtn: document.getElementById("exportJsonBtn"),
   copySummaryBtn: document.getElementById("copySummaryBtn"),
+  history: document.getElementById("history"),
+  clearHistoryBtn: document.getElementById("clearHistoryBtn"),
 };
 
 const SETTINGS = {
   MAX_ACCURACY_M: 50,  // ignore GPS points worse than this
   MIN_STEP_M: 5,       // ignore tiny jitter
 };
+
+const HISTORY_KEY = "runHistory_v1";
+const MAX_SAVED_RUNS = 30;
+// Downsample saved points to reduce storage (increase to 15–25m if you want smaller saves)
+const SAVE_MIN_STEP_M = 10;
+
+let runHistory = loadHistory();
+let savedThisRun = false;
+
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(HISTORY_KEY);
+    const arr = raw ? JSON.parse(raw) : [];
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+function saveHistory() {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(runHistory));
+}
+
+function downsamplePoints(points) {
+  if (!points || points.length <= 2) return points || [];
+  const out = [points[0]];
+  let last = points[0];
+  for (let i = 1; i < points.length - 1; i++) {
+    const p = points[i];
+    const d = haversineMeters({ lat: last.lat, lon: last.lon }, { lat: p.lat, lon: p.lon });
+    if (d >= SAVE_MIN_STEP_M) {
+      out.push(p);
+      last = p;
+    }
+  }
+  out.push(points[points.length - 1]);
+  return out;
+}
+
+function addRunToHistoryFromCurrentState() {
+  // Only save if there's real data
+  if (state.points.length < 2) return;
+
+  const elapsedMs = elapsedRunMs();
+  if (elapsedMs < 10_000) return; // skip super-short accidental stops (<10s)
+
+  const run = {
+    id: String(Date.now()),
+    endedAt: Date.now(),
+    startedAt: state.startedAtMs,
+    elapsedMs,
+    distanceM: state.distanceM,
+    points: downsamplePoints(state.points)
+  };
+
+  runHistory.unshift(run);
+  runHistory = runHistory.slice(0, MAX_SAVED_RUNS);
+  saveHistory();
+  renderHistory();
+}
+
+function fmtRunDate(ms) {
+  return new Date(ms).toLocaleString();
+}
+
+function runSummary(run) {
+  const miles = metersToMiles(run.distanceM);
+  const mins = run.elapsedMs / 60000;
+  const pace = miles > 0 ? (mins / miles) : Infinity;
+  return { miles, pace };
+}
+
+function exportGpxFor(run) {
+  const pts = run.points;
+  if (!pts || pts.length < 2) return;
+
+  const header =
+`<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="run-tracker" xmlns="http://www.topografix.com/GPX/1/1">
+  <trk>
+    <name>Run ${fmtRunDate(run.endedAt)}</name>
+    <trkseg>`;
+
+  const body = pts.map(p => {
+    const t = new Date(p.t || run.endedAt).toISOString();
+    const ele = (p.alt != null && isFinite(p.alt)) ? `\n        <ele>${p.alt}</ele>` : "";
+    return `      <trkpt lat="${p.lat}" lon="${p.lon}">${ele}\n        <time>${t}</time>\n      </trkpt>`;
+  }).join("\n");
+
+  const footer =
+`    </trkseg>
+  </trk>
+</gpx>`;
+
+  download(`run-${run.id}.gpx`, `${header}\n${body}\n${footer}`, "application/gpx+xml");
+}
+
+function exportJsonFor(run) {
+  download(`run-${run.id}.json`, JSON.stringify(run, null, 2), "application/json");
+}
+
+function viewRunOnMap(run) {
+  if (!map || !routeLine) initMapOnce();
+  if (!run.points || run.points.length < 2) return;
+
+  const latlngs = run.points.map(p => L.latLng(p.lat, p.lon));
+  routeLine.setLatLngs(latlngs);
+
+  const start = latlngs[0];
+  const end = latlngs[latlngs.length - 1];
+
+  startMarker.setLatLng(start).setStyle({ opacity: 1, fillOpacity: 1 });
+  endMarker.setLatLng(end).setStyle({ opacity: 1, fillOpacity: 1 });
+  currentMarker.setLatLng(end).setStyle({ opacity: 1, fillOpacity: 1 });
+  accuracyCircle.setRadius(0);
+
+  map.fitBounds(routeLine.getBounds().pad(0.15));
+
+  // Update the top metrics to show the saved run
+  UI.time.textContent = fmtTime(run.elapsedMs);
+  const miles = metersToMiles(run.distanceM);
+  UI.miles.textContent = `${miles.toFixed(3)} mi`;
+  UI.feet.textContent = `${Math.round(metersToFeet(run.distanceM))} ft`;
+
+  const mins = run.elapsedMs / 60000;
+  const pace = miles > 0 ? mins / miles : Infinity;
+  UI.pace.textContent = fmtPace(pace);
+
+  const hours = run.elapsedMs / 3600000;
+  const mph = hours > 0 ? miles / hours : 0;
+  UI.speed.textContent = `${mph.toFixed(1)} mph`;
+
+  UI.points.textContent = String(run.points.length);
+  UI.accuracy.textContent = "Saved run";
+  setStatus("Viewing saved run (not recording).");
+}
+
+function deleteRun(id) {
+  runHistory = runHistory.filter(r => r.id !== id);
+  saveHistory();
+  renderHistory();
+}
+
+function renderHistory() {
+  if (!UI.history) return;
+
+  UI.history.innerHTML = "";
+  if (!runHistory.length) {
+    const empty = document.createElement("div");
+    empty.className = "small";
+    empty.style.color = "var(--muted)";
+    empty.textContent = "No saved runs yet. Tap Stop to save a run.";
+    UI.history.appendChild(empty);
+    return;
+  }
+
+  runHistory.forEach((run, idx) => {
+    const { miles, pace } = runSummary(run);
+
+    const item = document.createElement("div");
+    item.className = "runItem";
+
+    item.innerHTML = `
+      <div class="runTop">
+        <div class="runTitle">Run #${runHistory.length - idx}</div>
+        <div class="runDate">${fmtRunDate(run.endedAt)}</div>
+      </div>
+
+      <div class="runGrid">
+        <div class="runStat"><div class="k">Time</div><div class="v">${fmtTime(run.elapsedMs)}</div></div>
+        <div class="runStat"><div class="k">Distance</div><div class="v">${miles.toFixed(3)} mi</div></div>
+        <div class="runStat"><div class="k">Pace</div><div class="v">${fmtPace(pace)}</div></div>
+      </div>
+
+      <div class="runActions">
+        <button class="btn" data-act="view">View</button>
+        <button class="btn" data-act="gpx">GPX</button>
+        <button class="btn" data-act="json">JSON</button>
+        <button class="btn danger" data-act="del">Delete</button>
+      </div>
+    `;
+
+    item.querySelector('[data-act="view"]').addEventListener("click", () => {
+      if (state.running) return setStatus("Stop your current run before viewing history.");
+      viewRunOnMap(run);
+    });
+    item.querySelector('[data-act="gpx"]').addEventListener("click", () => exportGpxFor(run));
+    item.querySelector('[data-act="json"]').addEventListener("click", () => exportJsonFor(run));
+    item.querySelector('[data-act="del"]').addEventListener("click", () => deleteRun(run.id));
+
+    UI.history.appendChild(item);
+  });
+}
+
+// Clear History button
+UI.clearHistoryBtn?.addEventListener("click", () => {
+  if (!runHistory.length) return;
+  if (confirm("Clear all saved runs on this device?")) {
+    runHistory = [];
+    saveHistory();
+    renderHistory();
+    setStatus("History cleared.");
+  }
+});
+
+// Render on load
+renderHistory();
 
 let watchId = null;
 let state = resetState();
