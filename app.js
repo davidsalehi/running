@@ -401,6 +401,7 @@ function requestPermissionHint() {
 }
 
 function startTracking() {
+  savedThisRun = false;
   initMapOnce();
 
   if (!("geolocation" in navigator)) {
@@ -472,6 +473,10 @@ function stopTracking() {
     navigator.geolocation.clearWatch(watchId);
     watchId = null;
   }
+  if (!savedThisRun) {
+  addRunToHistoryFromCurrentState();
+  savedThisRun = true;
+}
   setStatus("Stopped.");
   enableButtons();
   updateUI();
