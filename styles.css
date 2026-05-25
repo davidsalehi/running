@@ -124,3 +124,43 @@ canvas{
 @media (min-width: 820px){
   #map{ height: 520px; }
 }
+.history{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  margin-top:10px;
+}
+
+.runItem{
+  border:1px solid rgba(255,255,255,0.08);
+  background: rgba(0,0,0,0.18);
+  border-radius:14px;
+  padding:12px;
+}
+
+.runTop{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:baseline;
+}
+
+.runTitle{font-weight:750}
+.runDate{color:var(--muted); font-size:12px}
+
+.runGrid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:10px;
+  margin-top:10px;
+}
+
+.runStat .k{color:var(--muted); font-size:12px}
+.runStat .v{font-weight:750; margin-top:2px}
+
+.runActions{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:10px;
+}
